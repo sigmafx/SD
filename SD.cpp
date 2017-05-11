@@ -602,7 +602,40 @@ File File::openNextFile(uint8_t mode) {
   return File();
 }
 
-void File::rewindDirectory(void) {  
+bool File::getNextFilename(char *filename) {
+	dir_t p;
+
+	if (!isDirectory())
+	{
+		// must be a directory we're looking at
+		return false;
+	}
+
+	while (_file->readDir(&p) > 0) {
+
+		// done if past last used entry
+		if (p.name[0] == DIR_NAME_FREE) {
+			return false;
+		}
+
+		// skip deleted entry and entries for . and  ..
+		if (p.name[0] == DIR_NAME_DELETED || p.name[0] == '.') {
+			continue;
+		}
+
+		// only list subdirectories and files
+		if (!DIR_IS_FILE_OR_SUBDIR(&p)) {
+			continue;
+		}
+
+		_file->dirName(p, filename);
+		return true;
+	}
+
+	return false;
+}
+
+void File::rewindDirectory(void) {
   if (isDirectory())
     _file->rewind();
 }
