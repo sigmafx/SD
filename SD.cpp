@@ -602,7 +602,7 @@ File File::openNextFile(uint8_t mode) {
   return File();
 }
 
-bool File::getNextFilename(char *filename) {
+bool File::getNextFile(char *filename) {
 	dir_t p;
 
 	if (!isDirectory())
