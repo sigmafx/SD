@@ -128,7 +128,11 @@ enum {
 #define SDHC_SYSCTL_DIVISOR(prescale, divisor) \
 	(SDHC_SYSCTL_SDCLKFS((prescale)>>1)|SDHC_SYSCTL_DVS((divisor)-1))
 
-#if (F_CPU == 240000000)
+#if (F_CPU == 256000000)
+  #define SDHC_SYSCTL_400KHZ  SDHC_SYSCTL_DIVISOR(64, 10) // 400 kHz
+  #define SDHC_SYSCTL_25MHZ   SDHC_SYSCTL_DIVISOR(2, 6)   // 21.3 MHz
+  #define SDHC_SYSCTL_50MHZ   SDHC_SYSCTL_DIVISOR(2, 3)   // 42.6 MHz
+#elif (F_CPU == 240000000)
   #define SDHC_SYSCTL_400KHZ  SDHC_SYSCTL_DIVISOR(64, 10) // 375 kHz
   #define SDHC_SYSCTL_25MHZ   SDHC_SYSCTL_DIVISOR(2, 5)   // 24 MHz
   #define SDHC_SYSCTL_50MHZ   SDHC_SYSCTL_DIVISOR(2, 3)   // 40 MHz
@@ -561,13 +565,14 @@ static void SDHC_InitGPIO(void)
 // release the SDHC Controller signals
 static void SDHC_ReleaseGPIO(void)
 {
-  PORTE_PCR0 = 0;
-  PORTE_PCR1 = 0;
-  PORTE_PCR2 = 0;
-  PORTE_PCR3 = 0;
-  PORTE_PCR4 = 0;
-  PORTE_PCR5 = 0;
+  PORTE_PCR0 = PORT_PCR_MUX(1) | PORT_PCR_PE | PORT_PCR_PS; 	/* PULLUP SDHC.D1  */
+  PORTE_PCR1 = PORT_PCR_MUX(1) | PORT_PCR_PE | PORT_PCR_PS; 	/* PULLUP SDHC.D0  */
+  PORTE_PCR2 = 0;						/* SDHC.CLK */
+  PORTE_PCR3 = PORT_PCR_MUX(1) | PORT_PCR_PE | PORT_PCR_PS; 	/* PULLUP SDHC.CMD */
+  PORTE_PCR4 = PORT_PCR_MUX(1) | PORT_PCR_PE | PORT_PCR_PS;	/* PULLUP SDHC.D3  */
+  PORTE_PCR5 = PORT_PCR_MUX(1) | PORT_PCR_PE | PORT_PCR_PS; 	/* PULLUP SDHC.D2  */
 }
+
 
 
 static void SDHC_SetClock(uint32_t sysctl)
